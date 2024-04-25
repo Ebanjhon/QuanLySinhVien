@@ -1,0 +1,44 @@
+.limited-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    /* Số dòng tối đa */
+    overflow: hidden;
+    max-width: 90%;
+    /* Đặt giới hạn 30 kí tự */
+}
+
+.cont-monhoc {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-table-diems {
+    width: 80%;
+}
+
+.view-baihoc {
+    width: 80%;
+    background-color: rgb(255, 255, 255);
+    min-height: 300px;
+    padding: 10px;
+}
+
+.btn-custom {
+    background-color: rgb(16, 242, 167);
+
+}
+
+.btn-custom:hover {
+    background-color: aquamarine;
+
+}
+
+.view-dien-dan {
+    width: 80%;
+    margin-top: 20px;
+    background-color: rgb(255, 255, 255);
+    min-height: 300px;
+    padding: 10px;
+
+}

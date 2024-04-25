@@ -1,0 +1,42 @@
+.view-profile {
+    width: 80%;
+    height: 85%;
+    background-color: rgb(73, 122, 122);
+    padding: 20px;
+    border-radius: 30px;
+}
+
+.view-profile {
+    display: flex;
+
+}
+
+.img-profile img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+}
+
+.info_form {
+    min-width: 400px;
+    /* height: 100%; */
+    padding: 20px;
+    /* background-color: blue; */
+}
+
+.edit {
+    display: flex;
+    justify-content: space-between;
+}
+
+.unedit {
+    display: none;
+}
+
+.btn-xanh {
+    background-color: aqua;
+}
+
+.btn-xanh:hover {
+    background-color: rgb(12, 165, 165);
+}
