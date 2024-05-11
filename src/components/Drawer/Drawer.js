@@ -14,19 +14,27 @@ const Drawer = () => {
 
     const logout = () => {
         navigate('/logout');
+        // Xóa token từ localStorage
+        localStorage.removeItem('token');
     }
 
     return (
         <div className='Navbar'>
-            <img src={user.currentUser.avatar} className="avatar" />
-            <h2>{user.currentUser.firstname} {user.currentUser.lastname}</h2>
-            <h5>{user.currentUser.role}</h5>
+            <img src={user.userInfo.Avatar} className="avatar" />
+            <h2>{user.userInfo.FirstName} {user.userInfo.LastName}</h2>
+            <h5>{user.userInfo.Role}</h5>
             <Link to={"/profile"}><button className='btn btn-success' style={{ width: "250px", margin: "5px" }}>View profile</button></Link>
 
             <Link to={"/"}><button type="button" class="btn btn-primary btn-nav"><RiHome7Fill />Trang chủ</button></Link>
-            <Link to={"#"}><button type="button" class="btn btn-primary btn-nav"><AiFillMessage />Nhắn tin</button></Link>
-            <Link to={"/scores"}><button type="button" class="btn btn-primary btn-nav"><IoDocumentTextSharp />Xem điểm</button></Link>
-            <Link to={"/dkmon"}><button type="button" class="btn btn-primary btn-nav"><MdFileOpen />Đăng ký môn</button></Link>
+            <button type="button" class="btn btn-primary btn-nav"><AiFillMessage />Nhắn tin</button>
+
+            {user.userInfo.Role !== 'Teacher' && (
+                <>
+                    <Link to={"/scores"}><button type="button" className="btn btn-primary btn-nav"><IoDocumentTextSharp />Xem điểm</button></Link>
+                    <Link to={"/dkmon"}><button type="button" className="btn btn-primary btn-nav"><MdFileOpen />Đăng ký môn</button></Link>
+                </>
+            )}
+
             <hr className='hr-border' />
             <button type="button" class="btn btn-danger btn-nav" onClick={logout}><TbLogout />Logout</button>
         </div>

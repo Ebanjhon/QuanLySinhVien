@@ -1,5 +1,5 @@
 .bg-img {
-    background-image: url('/public/images/5279671.jpg');
+    background-image: url('/public/images/6874264.jpg');
     background-size: cover;
     background-position: center;
 }
@@ -9,7 +9,7 @@
     height: 79%;
     padding: 30px 20px 30px 20px;
     border-radius: 10px;
-    background-color: rgb(11, 89, 40);
+    background-color: rgb(9, 85, 184);
     display: flex;
     flex-direction: column;
     justify-content: space-around;

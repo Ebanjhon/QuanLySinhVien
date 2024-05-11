@@ -8,6 +8,8 @@ const Logout = () => {
 
     useEffect(() => {
         dispatch({ "type": "logout" });
+        // Xóa tất cả các biến trong sessionStorage
+        sessionStorage.clear();
         navigate("/login");
     })
 

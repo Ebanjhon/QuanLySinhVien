@@ -9,44 +9,80 @@ const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [show, setShow] = useState(false);
+    const [token, setToken] = useState(localStorage.getItem('token') || '');
 
-    // var currentUser = {
-    //     username: "eban",
-    //     firstName: "Jhon", // Thay "firtname" bằng "firstName"
-    //     lastName: "eban", // Thay "lastname" bằng "lastName"
-    //     role: "STUDENT",
-    //     id: 1,
-    //     email: "yjhoneban1403@gmail.com",
-    //     address: "Cuor Dang B",
-    //     avatar: "https://i.pinimg.com/736x/cb/97/b3/cb97b32a1e88722ebe7bc8d4498a0e02.jpg"
-    // };
+    // hàm fetch token
+    const fetchToken = async () => {
+        try {
+            // Thực hiện yêu cầu API để đăng nhập và nhận token
+            const response = await fetch('https://localhost:7111/api/Authentication/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    Username: username,
+                    Password: password,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Lưu token vào localStorage
+                localStorage.setItem('token', data.token);
+                setToken(data.token);
+            } else {
+                // Xử lý lỗi nếu có
+                console.error('Đăng nhập không thành công');
+                setShow(true);
+            }
+        } catch (error) {
+            console.error('Lỗi:', error);
+        }
+    };
+
+    // hàm lấy thông tin user
+    const fetchUserInfo = async () => {
+        try {
+            const response = await fetch('https://localhost:7111/api/Authentication/userinfo', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Sử dụng token từ state
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const userInfo = await response.json();
+                if (userInfo.Avatar == null) {
+                    // Gán một đường dẫn ảnh bất kỳ vào userInfo.avatar
+                    userInfo.Avatar = 'https://i.pinimg.com/564x/74/37/89/74378930719d0bd2663d30d695c57063.jpg';
+                }
+                // lưu user vào thiết bị
+                dispatch({ "type": "login", "payload": { userInfo } });
+            } else {
+                console.error('Lấy thông tin người dùng không thành công');
+                return null;
+            }
+        } catch (error) {
+            console.error('Lỗi:', error);
+            return null;
+        }
+    };
+
+
+    useEffect(() => {
+        if (token != null) {
+            // gọi hàm lấy thông tin user
+            fetchUserInfo();
+        }
+
+    }, [token]);
 
 
     // ham đăng nhập
     const login = async () => {
-
-        // lay current user
-        try {
-            const response = await fetch('http://127.0.0.1:8000/users/1');
-            if (response.status !== 200) {
-                throw new Error("that bai la me thanh cong!");
-            }
-            const currentUser = await response.json();
-            dispatch({ "type": "login", "payload": { currentUser } });
-
-        } catch (error) {
-            alert(error);
-        }
-
-        // if (username === "jhon" && password === "123") {
-        //     // đưa vào reducer
-        //     dispatch({ "type": "login", "payload": { currentUser } });
-        // } else {
-        //     setShow(true);
-        // }
-
-        // dispatch({ "type": "login" });
-        // navigate('/');
+        fetchToken();
     };
 
     // hàm nhập dữ liệu

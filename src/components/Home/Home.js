@@ -7,24 +7,82 @@ import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../Navigation";
 const Home = () => {
+    const [user, dispatch] = useContext(UserContext);
     const navigate = useNavigate();
     const [days, setDays] = useState([]);
     const [month, setMonth] = useState();
     const [year, setYear] = useState();
     const [day, setDay] = useState();
-
-    const [user, dispatch] = useContext(UserContext);
-
+    const [hocKy, setHocKy] = useState(() => {
+        const savedData = sessionStorage.getItem('hocky');
+        return savedData ? JSON.parse(savedData) : null;
+    });
+    const [semester, setSemester] = useState();// dùng để chứa học kỳ hiện tại
+    const [courses, setCourses] = useState(() => {
+        const savedData = sessionStorage.getItem('khoahoc');
+        return savedData ? JSON.parse(savedData) : null;
+    });
     const test = () => {
-        console.log(user)
+        console.log(courses);
     }
-
+    // gọi các list học kỳ
+    const fetchHocKy = async () => {
+        try {
+            const response = await fetch('https://localhost:7111/api/HocKy');
+            const HocKyData = await response.json();
+            setHocKy(HocKyData);
+            sessionStorage.setItem('hocky', JSON.stringify(hocKy));
+        } catch (error) {
+            alert(error);
+            console.error('Error fetching data:', error);
+        }
+    }
     useEffect(() => {
-        // console.log(user);
-    }, [])
+        if (hocKy != null)
+            setSemester(hocKy[hocKy.length - 1]);
+    }, [hocKy]);
+    // fetch api lấy danh khóa học
+    useEffect(() => {
+        const fetchCourseST = async () => {
+            try {
+                const response = await fetch(`https://localhost:7111/api/KhoaHoc/${user.userInfo.IdUser}/${semester.IdHocKy}`);
+                const dataKhoaHoc = await response.json();
+                sessionStorage.setItem('khoahoc', JSON.stringify(dataKhoaHoc));
+                setCourses(JSON.parse(sessionStorage.getItem('khoahoc')));
+            } catch (error) {
+                alert(error);
+                console.error('Error fetching data:', error);
+            }
+        }
 
+        const fetchCourseTC = async () => {
+            try {
+                const response = await fetch(`https://localhost:7111/api/KhoaHoc/khoaHocByGVHK/${user.userInfo.IdUser}/${semester.IdHocKy}`);
+                const dataKhoaHoc = await response.json();
+                sessionStorage.setItem('khoahoc', JSON.stringify(dataKhoaHoc));
+                setCourses(JSON.parse(sessionStorage.getItem('khoahoc')));
+            } catch (error) {
+                alert(error);
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        if (semester != null) {
+            if (user.userInfo.Role === 'Student')
+                fetchCourseST();
+            else
+                fetchCourseTC();
+        }
+    }, [semester]);
+    // hàm thay đổi học ky
+    const handleSemesterChange = (event) => {
+        const selectedSemesterId = parseInt(event.target.value); // Lấy giá trị Id của học kỳ được chọn từ dropdown
+        const selectedSemester = hocKy.find(hk => hk.IdHocKy === selectedSemesterId); // Tìm học kỳ tương ứng với Id đã chọn
+        setSemester(selectedSemester); // Cập nhật state semester với học kỳ được chọn
+    };
     // hàm tạo mảng ngày
     useEffect(() => {
+        fetchHocKy();
 
         // hàm lấy ngày tháng hiện tại
         var d = new Date();
@@ -51,20 +109,18 @@ const Home = () => {
             ngays.push("");
         }
         setDays(ngays);
-        // console.log(days);
 
     }, [month]);
-
     // hàm lấy số lượng ngày của tháng
     function laySoLuongNgay() {
         return new Date(year, month, 0).getDate();
     }
-
-
-    const courseDetail = (courseId) => {// data là id của cource
-        navigate('/course', { state: { courseId } });
+    const courseDetail = (course) => {// data là id của cource
+        if (user.userInfo.Role === 'Student')
+            navigate('/course', { state: { course } });
+        else
+            navigate('/courseGV', { state: { course } });
     }
-
     // tạo lịch
     function Days() {
         return (
@@ -78,7 +134,6 @@ const Home = () => {
             </>
         );
     }
-
     return (
         <div className="container-cont">
             <Drawer />
@@ -92,10 +147,32 @@ const Home = () => {
                                 <input class="form-control form-control-lg form-control-borderless" style={{ width: "500px" }} type="search" placeholder="Tìm kiếm khóa học..." />
                             </div>
                             <div class="col-auto">
-                                <button class="btn btn-lg btn-info" type="submit"><IoSearch /> Tìm</button>
+                                <button class="btn btn-lg btn-info" type="submit" style={{ fontWeight: "400" }}>Tìm kiếm</button>
                             </div>
                         </div>
                     </form>
+
+                    {/* hiển thị droplist */}
+                    <div>
+                        {!semester ? (
+                            <div class="spinner-grow spinner-grow-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+
+                        ) : (
+                            <select class="form-select" aria-label="Default select example" value={semester.IdHocKy} onChange={handleSemesterChange}>
+                                <option value="" selected disabled>
+                                    {semester.NamHocKy}
+                                </option>
+                                {hocKy.map((hk) => (
+                                    <option key={hk.IdHocKy} value={hk.IdHocKy}>
+                                        {hk.NamHocKy}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+
                     <div>
                         <button className="btn btn-secondary" onClick={test}>Cài đặt <IoIosSettings /></button>
                     </div>
@@ -103,36 +180,81 @@ const Home = () => {
                 {/* hiện thị môn học và lịch */}
                 <div className="course-calender">
                     <div className="mid">
-                        <h2 className="text-center">Các khóa học</h2>
-                        <div class="couses">
 
-                            <div class="couse btn" onClick={() => courseDetail(1)}>
-                                <img src="https://i.pinimg.com/564x/56/65/37/566537bb231263dd1f26f6267ed722b7.jpg" className="img-course" />
-                                <div className="info-couse">
-                                    <h2>Tên môn học</h2>
-                                    <h4>Tên lớp học</h4>
-                                    <h6>Tên Giáo viên: TS Eban Jhon</h6>
-                                    <p>Lớp có 02 học sinh</p>
+                        {/* chia giáo viên và sinh viên */}
+                        {user.userInfo.Role !== "Student" ? (
+                            <>
+                                <h2 className="text-center">Các lớp đang dạy</h2>
+                                <div class="couses">
+                                    {!courses ? (
+                                        <div class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {courses.length === 0 ? (
+                                                <p>Không có lớp nào!</p>
+                                            ) : (
+                                                <>
+                                                    {JSON.parse(sessionStorage.getItem('khoahoc')).map((kh) => (
+                                                        <div class="teacher btn" onClick={() => courseDetail(kh)}>
+                                                            <img src="https://i.pinimg.com/564x/c9/91/8c/c9918c931842e016253fe8dd268bf35a.jpg" className="img-course" />
+                                                            <div className="info-couse">
+                                                                <h7>Mã Khóa học {kh.IdKhoaHoc}</h7>
+                                                                <h2>{kh.TenKhoaHoc}</h2>
+                                                                <h4>Tên Môn: {kh.TenMonHoc}</h4>
+                                                                <p>Lớp có {kh.SoLuongSinhVien} học sinh</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
-                                {/* <div className="info-aler">
-                                    thông báo
-                                </div> */}
-                            </div>
-
-                            <div class="couse btn" onClick={() => courseDetail(2)}>
-                                <img src="https://i.pinimg.com/564x/56/65/37/566537bb231263dd1f26f6267ed722b7.jpg" className="img-course" />
-                                <div className="info-couse">
-                                    <h2>Tên môn học</h2>
-                                    <h4>Tên lớp học</h4>
-                                    <h6>Tên Giáo viên: TS Eban Jhon</h6>
-                                    <p>Lớp có 02 học sinh</p>
+                                {/* hiển thị các khóa học đang dạy
+                                trang khóa học
+                                trang tạo bài tập
+                                trang nhập điểm sinh viên */}
+                            </>
+                        ) : (
+                            <>
+                                <h2 className="text-center">Các khóa học</h2>
+                                <div class="couses">
+                                    {!courses ? (
+                                        <div class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {courses.length === 0 ? (
+                                                <p>Không có khóa học nào được đăng ký!</p>
+                                            ) : (
+                                                <>
+                                                    {JSON.parse(sessionStorage.getItem('khoahoc')).map((kh) => (
+                                                        <div class="couse btn" onClick={() => courseDetail(kh)}>
+                                                            <img src="https://i.pinimg.com/564x/56/65/37/566537bb231263dd1f26f6267ed722b7.jpg" className="img-course" />
+                                                            <div className="info-couse">
+                                                                <h7>Mã Khóa học {kh.IdKhoaHoc}</h7>
+                                                                <h2>{kh.TenKhoaHoc}</h2>
+                                                                <h4>Tên Môn: {kh.TenMonHoc} </h4>
+                                                                <h6>Tên Giáo viên: {kh.TenGiangVien}</h6>
+                                                                <p>Lớp có {kh.SoLuongSinhVien} học sinh - Số tín chỉ: {kh.SoTinChi}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
-                                {/* <div className="info-aler">
-                                    thông báo
-                                </div> */}
-                            </div>
+                            </>
+                        )};
 
-                        </div>
                     </div>
                     <div className="right-side d-flex justify-content-center ">
                         <div style={{}}>

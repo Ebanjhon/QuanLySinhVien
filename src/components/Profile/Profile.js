@@ -5,12 +5,13 @@ import './Profile.css'
 import { UserContext } from '../../Navigation';
 const Profile = () => {
     const [user, dispatch] = useContext(UserContext);
-    const [firstname, setFirstName] = useState(user.currentUser.firstname);
-    const [lastname, setLasttName] = useState(user.currentUser.lastname);
-    const [email, setEmail] = useState(user.currentUser.email);
-    const [username, setUserName] = useState(user.currentUser.username);
-    const [avatar, setAvatar] = useState(user.currentUser.avatar);
-    const [address, setAddress] = useState(user.currentUser.address);
+    const [firstname, setFirstName] = useState(user.userInfo.FirstName);
+    const [lastname, setLasttName] = useState(user.userInfo.LastName);
+    const [email, setEmail] = useState(user.userInfo.Email);
+    const [username, setUserName] = useState(user.userInfo.Username);
+    const [avatar, setAvatar] = useState(user.userInfo.Avatar);
+    const [address, setAddress] = useState(user.userInfo.Address);
+    const [role, setRole] = useState(user.userInfo.Role);
     const [readOnly, setReadOnly] = useState(false);
 
     // chinh sửa thông tin
@@ -82,7 +83,7 @@ const Profile = () => {
                         </div>
                         <div className='info_form'>
                             <h1>{username}</h1>
-                            <p>"(student)"</p>
+                            <p>"{role}"</p>
                             <form>
                                 <div style={{ display: "flex" }}>
                                     <div class="mb-3">
