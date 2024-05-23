@@ -23,6 +23,7 @@ const CourseTC = () => {
     const [datacauhoi, setDatacauhoi] = useState([]);
     const [contentBT, setContentBT] = useState('');
     const [selectedId, setSelectedId] = useState(0);
+    const [thoigian, setThoiGian] = useState(1);
     const [selectedIdCreate, setSelectedIdCreate] = useState('1');
     //
     const [quesSelected, setQuesSelected] = useState([]);
@@ -128,7 +129,7 @@ const CourseTC = () => {
                 "TenBaiTap": contentBT,
                 "IdLoaiBaiTap": selectedIDBT,
                 "DanhSachCauHoi": idListquizs,
-                "ThoiGian": 10
+                "ThoiGian": thoigian
             };
             try {
                 const response = await fetch('https://localhost:7111/api/BaiTap/TaoListTracNghiem', {
@@ -183,7 +184,7 @@ const CourseTC = () => {
 
     // buton tạo câu hỏi
     const [question, setQuestion] = useState('');
-    const [slDapAn, setSlDapAn] = useState(2);
+    const [slDapAn, setSlDapAn] = useState(0);
     const [answers, setAnswers] = useState(Array.from({ length: slDapAn }, () => ''));
     const [selectedAnswer, setSelectedAnswer] = useState(Array.from({ length: slDapAn }, () => false)); // Thêm dòng này
 
@@ -203,6 +204,10 @@ const CourseTC = () => {
         setAnswers(prevAnswers => [...prevAnswers, '']);
         setSelectedAnswer(prevSelectedAnswer => [...prevSelectedAnswer, false]);
     };
+    // chám điểm
+    const ChamDiemSv = (baitap) => {
+        Navigate('/xemDiem', { state: { baitap } });
+    }
 
     const createQuesion = async () => {
         if (question === '') {
@@ -261,17 +266,22 @@ const CourseTC = () => {
         }
     };
 
+    const listSV = () => {
+        Navigate('/danhSachSinhVien', { state: { Course } });
+    }
+
     return (
         <div className="container-cont">
             <Drawer />
             <div className="cont">
                 {/* hiển thị tên môn học */}
-                <div style={{ padding: "10px", display: "flex", alignItems: 'center' }}>
-                    <div style={{ width: '40%' }}>
+                <div style={{ padding: "10px", display: "flex", alignItems: 'center', justifyContent: "space-between" }}>
+                    <div>
                         <h3>GV: {Course.TenGiangVien}</h3>
                         <h5>mã: {Course.IdKhoaHoc} - {Course.TenMonHoc}</h5>
                     </div>
                     <h1 className='limited-text'>{Course.TenKhoaHoc} </h1>
+                    <button className='btn btn-secondary' onClick={listSV}>xem danh sách sinh viên</button>
                 </div>
                 <div className='d-flex justify-content-center align-items-center'>
                     <hr style={{ width: "95%" }} />
@@ -295,7 +305,7 @@ const CourseTC = () => {
                                                 <button style={{ marginRight: "20px " }} className="btn btn-danger" onClick={() => deleteBaiTap(bt.IdBaiTap)}>Xóa Bài tập</button>
                                                 <button className="btn btn-warning">Chỉnh sửa bài tập</button>
                                             </div>
-                                            <Link to={"/xemDiem"}><button style={{ width: "100px", height: "100%" }} class="btn btn-info">Xem và nhập điểm</button></Link>
+                                            <button style={{ width: "100px", height: "100%" }} class="btn btn-info" onClick={() => ChamDiemSv(bt)}>Xem và nhập điểm</button>
                                         </div>
                                         <hr></hr>
                                     </>
@@ -385,6 +395,14 @@ const CourseTC = () => {
                                     </div>
                                 </div>
                             </div>
+                            {/* {/* chon time? /} */}
+                            <p>nhập thời gian làm bài(trắc nghiệm sẽ là phút, tự luận sẽ theo ngày!)</p>
+                            <input
+                                type="number"
+                                value={thoigian}
+                                onChange={(e) => setThoiGian(e.target.value)}
+                                min={1}
+                            />
                         </div>
                     </div>
                     Tạo câu hỏi

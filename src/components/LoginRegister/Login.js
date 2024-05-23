@@ -130,9 +130,9 @@ const Login = () => {
                     <input className='form-input' type='password' placeholder='Password' onChange={changpassword} onKeyDown={handleEnterPress} />
                 </form>
 
-                <Link to={""} style={{ textDecoration: "none" }}>Forgot password?</Link>
+                <Link to={""} style={{ textDecoration: "none", color: "yellow" }}>Forgot password?</Link>
                 <button type="button" class="btn btn-primary btn-login" onClick={login}>LOGIN</button>
-                <h5>Chưa có tài khoản?<Link to={"/register"}>Đăng ký</Link></h5>
+                <h5>Chưa có tài khoản?<Link to={"/register"} style={{ color: "black" }}>Đăng ký</Link></h5>
             </div>
         </div>
     )

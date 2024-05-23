@@ -32,13 +32,13 @@
 }
 
 .btn-custom {
-    background-color: rgb(16, 242, 167);
+    background-color: #0e62d7;
+    color: aliceblue;
 
 }
 
 .btn-custom:hover {
-    background-color: aquamarine;
-
+    background-color: #0CC8F2;
 }
 
 .view-dien-dan {

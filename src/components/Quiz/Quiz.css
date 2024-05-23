@@ -16,7 +16,7 @@
 }
 
 .nav-timer div {
-    background-image: linear-gradient(to bottom right, rgb(7, 161, 138), yellow);
+    background-image: linear-gradient(to bottom right, #30C6F0, #191cca);
     border-radius: 0px 0px 20px 20px;
     padding: 20px;
     display: flex;
@@ -34,7 +34,7 @@
 .item-quiz {
     width: 100%;
     height: auto;
-    background-color: rgb(0, 183, 122);
+    background-color: #409ef2;
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 10px;
@@ -69,20 +69,20 @@
 }
 
 .quesions:hover span {
-    background-color: rgb(27, 240, 169);
+    background-color: rgb(181, 181, 181);
 }
 
 .quesions input:checked+span {
 
-    background-color: rgb(252, 143, 10);
+    background-color: #e7b00b;
 }
 
 .btn-green {
-    background-color: rgb(8, 188, 23);
+    background-color: #218de6;
 }
 
 .btn-green:hover {
-    background-color: rgb(234, 238, 10);
+    background-color: #00aeff;
 }
 
 .next {

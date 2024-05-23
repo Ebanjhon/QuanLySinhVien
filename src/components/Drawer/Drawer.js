@@ -23,7 +23,7 @@ const Drawer = () => {
             <img src={user.userInfo.Avatar} className="avatar" />
             <h2>{user.userInfo.FirstName} {user.userInfo.LastName}</h2>
             <h5>{user.userInfo.Role}</h5>
-            <Link to={"/profile"}><button className='btn btn-success' style={{ width: "250px", margin: "5px" }}>View profile</button></Link>
+            <Link to={"/profile"}><button className='btn custome-btn-profile' style={{ width: "250px", margin: "5px" }}>My profile</button></Link>
 
             <Link to={"/"}><button type="button" class="btn btn-primary btn-nav"><RiHome7Fill />Trang chủ</button></Link>
             <button type="button" class="btn btn-primary btn-nav"><AiFillMessage />Nhắn tin</button>

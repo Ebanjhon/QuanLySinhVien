@@ -6,7 +6,7 @@
 
 .form-login {
     width: 400px;
-    height: 79%;
+    min-height: 80%;
     padding: 30px 20px 30px 20px;
     border-radius: 10px;
     background-color: rgb(9, 85, 184);

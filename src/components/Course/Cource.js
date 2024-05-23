@@ -2,10 +2,13 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Drawer from '../Drawer/Drawer';
 import '../Style.css'
 import './Cource.css'
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { UserContext } from '../../Navigation';
 const Course = () => {
+    const [user, dispatch] = useContext(UserContext);
     const Navigate = useNavigate();
     const location = useLocation();
+    const [cotDiems, setCotDiems] = useState([]);
     const courseFromLocationState = location.state?.course;
     // Kiểm tra xem location.state?.course có giá trị không
     if (courseFromLocationState) {
@@ -32,12 +35,14 @@ const Course = () => {
     }, []);
 
     const doexam = (baitap) => {
+        // console.log(cotDiems.find(item => item.IdBaiTap == baitap.IdBaiTap));
+        const diemso = cotDiems.find(item => item.IdBaiTap == baitap.IdBaiTap);
         switch (baitap.IdLoaiBaiTap) {
             case 1:
-                Navigate('/quiz', { state: { baitap } });
+                Navigate('/quiz', { state: { baitap, diemso } });
                 break;
             case 2:
-                Navigate('/essay', { state: { baitap } });
+                Navigate('/essay', { state: { baitap, diemso } });
                 break;
             default:
         }
@@ -64,6 +69,34 @@ const Course = () => {
                 return "không tìm thấy kiểu bài tập";
         }
     };
+    // fetch dữ liệu cột điểm
+    useEffect(() => {
+        const fetchCotDiem = async () => {
+            const data = {
+                IdSinhVien: user.userInfo.IdUser,
+                IdKhoaHoc: Course.IdKhoaHoc
+            };
+
+            try {
+                const response = await fetch('https://localhost:7111/api/XyLyLamBai/GetCotDiems', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Các headers khác nếu cần
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Request failed');
+                }
+                setCotDiems(await response.json());
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        fetchCotDiem();
+    }, []);
 
     return (
         <div className="container-cont">
@@ -83,24 +116,31 @@ const Course = () => {
                 <div className='d-flex justify-content-center align-items-center cont-monhoc'>
                     {/* hiện thị điểm môn học */}
                     <div className='form-table-diems'>
-                        <table className='table table-bordered' style={{ textAlign: 'center' }}>
-                            <thead>
-                                <tr >
-                                    <th>Giữa kỳ</th>
-                                    <th>Cuối kỳ</th>
-                                    <th>Điểm miệng</th>
-                                    <th>Điểm cộng</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>9.0</td>
-                                    <td>9.0</td>
-                                    <td>9.0</td>
-                                    <td>9.0</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        {!cotDiems ? (
+                            <>
+                                <h2>loading....</h2>
+                            </>
+                        ) : (
+                            <>
+                                <table className='table table-bordered' style={{ textAlign: 'center' }}>
+                                    <thead>
+                                        <tr >
+                                            {cotDiems.map((ten) => (
+                                                <th>{ten.TenCotDiem}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            {cotDiems.map((diem) => (
+                                                <td>{diem.Diem === -1 ? (<>chưa chấm</>) : (<>{diem.Diem}</>)}</td>
+                                            ))}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </>
+                        )}
+
                     </div>
                     {/* hiển thị các file môn học */}
                     {/* hiển thị các bài tập trắc nghiệm */}

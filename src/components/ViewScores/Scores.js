@@ -1,10 +1,22 @@
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Drawer from '../Drawer/Drawer';
 import '../Style.css'
 import './Scores.css'
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { UserContext } from '../../Navigation';
 const Scores = () => {
+    const hocKy = JSON.parse(sessionStorage.getItem('hocky'));
+    const [semester, setSemester] = useState(hocKy[hocKy.length - 1]);
+    const [user, dispatch] = useContext(UserContext);
+    const [cotDiem, setCotDiem] = useState([]);
+
+    // hàm thay đổi học ky
+    const handleSemesterChange = (event) => {
+        const selectedSemesterId = parseInt(event.target.value); // Lấy giá trị Id của học kỳ được chọn từ dropdown
+        const selectedSemester = JSON.parse(sessionStorage.getItem('hocky')).find(hk => hk.IdHocKy === selectedSemesterId); // Tìm học kỳ tương ứng với Id đã chọn
+        setSemester(selectedSemester); // Cập nhật state semester với học kỳ được chọn
+    };
 
     const generatePDF = () => {
         const input = document.getElementById('bangpdf');
@@ -40,6 +52,27 @@ const Scores = () => {
             });
     };
 
+    // lấy danh sách điểm
+    const getlistscore = async () => {
+
+        try {
+            const response = await fetch(`https://localhost:7111/api/XyLyLamBai/ketQuaHocTapTheoKy/${user.userInfo.IdUser}/${semester.IdHocKy}`);
+            setCotDiem(await response.json());
+            console.log(cotDiem);
+        } catch (error) {
+            alert(error);
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    useEffect(() => {
+        getlistscore();
+    }, [semester]);
+
+    const test = () => {
+        console.log(cotDiem);
+    }
+
     return (
         <div className="container-cont">
             <Drawer />
@@ -47,11 +80,23 @@ const Scores = () => {
                 <div className='head-score'>
                     <h2>Bảng điểm</h2>
                     <div>
-                        <select name="semester" class="form-select">
-                            <option value="semester1">Học kỳ 1</option>
-                            <option value="semester2">Học kỳ 2</option>
-                            <option value="summer">Học kỳ 3</option>
-                        </select>
+                        {!semester ? (
+                            <div class="spinner-grow spinner-grow-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+
+                        ) : (
+                            < select class="form-select" aria-label="Default select example" value={semester.IdHocKy} onChange={handleSemesterChange}>
+                                <option value="" selected disabled>
+                                    {semester.NamHocKy}
+                                </option>
+                                {hocKy.map((hk) => (
+                                    <option key={hk.IdHocKy} value={hk.IdHocKy}>
+                                        {hk.NamHocKy}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </div>
                 </div>
 
@@ -59,35 +104,47 @@ const Scores = () => {
                 <div className="list-mon-diem d-flex justify-content-center align-items-center" id='bangpdf'>
                     <hr className='hr-border' style={{ width: "80%" }} />
                     <div>
-                        <h3>Sinh Viên: Êban - 1234567890</h3>
+                        <h3>Sinh Viên: {user.userInfo.FirstName} {user.userInfo.LastName} - {user.userInfo.IdUser}</h3>
                     </div>
                     <div className='form-table-diems'>
-                        <h2>Tên môn học</h2>
-                        <table className='table table-bordered' style={{ textAlign: 'center' }}>
-                            <thead>
-                                <tr >
-                                    <th>Giữa kỳ</th>
-                                    <th>Cuối kỳ</th>
-                                    <th>Điểm miệng</th>
-                                    <th>Điểm cộng</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>9.0</td>
-                                    <td>9.0</td>
-                                    <td>9.0</td>
-                                    <td>9.0</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        {cotDiem.length == 0 ? (
+                            <>
+                                loadding
+                            </>
+                        ) : (
+                            <>
+                                {cotDiem.KetQuaKhoaHocs.map((cotdiem) => (
+                                    <>
+                                        <h2>{cotdiem.TenKhoaHoc}</h2>
+                                        <table className='table table-bordered' style={{ textAlign: 'center' }}>
+                                            <thead>
+                                                <tr >
+                                                    {cotdiem.Diems.map((ten) => (
+                                                        <th>{ten.Tencotdiem}</th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    {cotdiem.Diems.map((d) => (
+                                                        <td>{d.Diem}</td>
+                                                    ))}
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </>
+                                ))}
+                            </>
+                        )}
+
                     </div>
                 </div>
                 <div className='d-flex justify-content-center align-items-center'>
                     <button className='btn btn-danger' onClick={generatePDF}>Xuất bảng điểm</button>
+                    <button className='btn btn-outline-success' onClick={test}>test</button>
                 </div>
             </div>
-        </div>
+        </div >
     )
 };
 

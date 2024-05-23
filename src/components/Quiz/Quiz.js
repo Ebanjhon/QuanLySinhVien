@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Quiz.css';
+import { UserContext } from '../../Navigation';
 
 const Quiz = () => {
+    const [user, dispatch] = useContext(UserContext);
+    const Navigate = useNavigate();
     const location = useLocation();
     const [listCauHoi, setListCauHoi] = useState();
     const baiTap = location.state?.baitap;
@@ -11,6 +14,7 @@ const Quiz = () => {
     const [listDN, setListDN] = useState([]);
     const [minutes, setMinutes] = useState(baiTap.ThoiGian);
     const [seconds, setSeconds] = useState(0);
+    const [result, setResult] = useState(location.state?.diemso || null);
     //ham tao mang chua cau tra loi
     useEffect(() => {
         if (listCauHoi != null) {
@@ -24,7 +28,7 @@ const Quiz = () => {
         try {
             const response = await fetch(`https://localhost:7111/api/CauHoi/byBaiTap/${baiTap.IdBaiTap}`);
             const cauHoiData = await response.json();
-            setListCauHoi(cauHoiData);
+            setListCauHoi(shuffleArray([...cauHoiData]));
         } catch (error) {
             alert(error);
             console.error('Error fetching data:', error);
@@ -32,21 +36,29 @@ const Quiz = () => {
     };
 
     useEffect(() => {
+        if (result != null) {
+            setMinutes(0);
+            setSeconds(0);
+        }
         danhSachCauHoi();
     }, []);
+
+    // hàm xảo trộn câu hỏi
+    const shuffleArray = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    };
+
 
     const setDapAn = (idDA) => {
         listDN[indexCau] = idDA;
         setChose(idDA);
     };
 
-    const done = () => {
-        console.log(listDN);
-    };
-
     // đồng hồ đếm ngược 
-
-
     useEffect(() => {
         const intervalId = setInterval(() => {
             if (seconds > 0) {
@@ -54,6 +66,7 @@ const Quiz = () => {
             } else {
                 if (minutes === 0) {
                     clearInterval(intervalId);
+                    tinhDiem();
                     // Xử lý khi hết thời gian
                 } else {
                     setMinutes(minutes - 1);
@@ -102,6 +115,48 @@ const Quiz = () => {
         setIndexCau(index);
     };
 
+    const tinhDiem = async () => {
+        const data = {
+            IDSinhVien: user.userInfo.IdUser,
+            IDBaiTap: baiTap.IdBaiTap,
+            DapAn: listDN
+        };
+
+        try {
+            const response = await fetch('https://localhost:7111/api/XyLyLamBai/tinhDiemTracNghiem', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error('Request failed');
+
+            } else {
+                const responseData = await response.json(); // hứng dữ liệu từ server
+                setResult(responseData);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+    const backCourse = () => {
+        Navigate('/course');
+    }
+
+    // lưu điểm và tính điểm
+    // làm bài xong thì gọi hàm này
+    const done = () => {
+        // console.log();
+        setMinutes(0);
+        setSeconds(0);
+        if (result === null)
+            tinhDiem();
+    };
+    // lấy tất cả các cột điểm
+
     return (
         <div className='container-quiz'>
 
@@ -112,24 +167,38 @@ const Quiz = () => {
                     <button className='btn btn-green' style={{ width: '180px', height: '50px', fontSize: "22px" }} onClick={done}>làm xong</button>
                 </div>
             </div>
+        // khi chưa có kết quả thì hiện thị form làm bài
+            {result ? (
+                <>
+                    <div className='quiz-item'>
+                        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignContent: "center", alignItems: "center" }}>
+                            <h3>Số điểm: {result.Diem}</h3>
+                            <button className='btn btn-info' onClick={backCourse}>Quay về trang chủ</button>
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <>
+                    {/* danh sach cau trac nghiem */}
+                    <div className='quiz-item'>
+                        {!listCauHoi ? (
+                            <p>Loading...</p>
+                        ) : (
+                            <Question ques={listCauHoi[indexCau]} />
+                        )}
+                        <div className='d-flex justify-content-center align-items-center'>
+                            <button type="button" className="btn btn-secondary next" onClick={giam}>Câu sau</button>
+                            <button type="button" className="btn btn-secondary next" onClick={tang}>Câu tiếp</button>
+                        </div>
+                        <div className='content-list-cauhoi'>
+                            {listDN.map((item, index) => (
+                                <button key={index} type="button" className="btn btn-info itemCau" onClick={() => setSoCau({ index })}> câu : {index + 1}</button>
+                            ))}
+                        </div>
+                    </div>
+                </>
+            )}
 
-            {/* danh sach cau trac nghiem */}
-            <div className='quiz-item'>
-                {!listCauHoi ? (
-                    <p>Loading...</p>
-                ) : (
-                    <Question ques={listCauHoi[indexCau]} />
-                )}
-                <div className='d-flex justify-content-center align-items-center'>
-                    <button type="button" className="btn btn-secondary next" onClick={giam}>Câu sau</button>
-                    <button type="button" className="btn btn-secondary next" onClick={tang}>Câu tiếp</button>
-                </div>
-                <div className='content-list-cauhoi'>
-                    {listDN.map((item, index) => (
-                        <button key={index} type="button" className="btn btn-success itemCau" onClick={() => setSoCau({ index })}> câu : {index + 1}</button>
-                    ))}
-                </div>
-            </div>
         </div >
     )
 };

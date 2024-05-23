@@ -14,6 +14,7 @@ import Logout from "./components/LoginRegister/Logout";
 import Essay from "./components/Quiz/Essay";
 import CourseTC from "./components/Course/CourseTC";
 import Diem from "./components/Course/Diem";
+import ListSV from "./components/Course/ListSV";
 // đường ống đẫn đến các components
 export const UserContext = createContext();
 
@@ -34,11 +35,13 @@ const Navigation = () => {
                         <>
                             <Route path="/" element={<Home />} />
                             <Route path="/login" element={<Navigate to={"/"} />} />
+                            <Route path="/register" element={<Navigate to={"/"} />} />
                             <Route path="/profile" element={<Profile />} />
                             <Route path="/scores" element={<Scores />} />
                             <Route path="/dkmon" element={<DKmon />} />
                             <Route path="/course" element={<Course />} />
                             <Route path="/xemDiem" element={<Diem />} />
+                            <Route path="/danhSachSinhVien" element={<ListSV />} />
                             <Route path="/courseGV" element={<CourseTC />} />
                             <Route path="/quiz" element={<Quiz />} />
                             <Route path="/essay" element={<Essay />} />

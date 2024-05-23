@@ -45,3 +45,13 @@
     border-width: 10;
     color: rgb(34, 34, 34);
 }
+
+.custome-btn-profile {
+    background-color: rgb(8, 33, 54);
+    color: azure;
+}
+
+.custome-btn-profile:hover {
+    color: azure;
+    background-color: rgb(6, 63, 109);
+}

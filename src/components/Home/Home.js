@@ -23,7 +23,7 @@ const Home = () => {
         return savedData ? JSON.parse(savedData) : null;
     });
     const test = () => {
-        console.log(courses);
+        console.log(JSON.parse(sessionStorage.getItem('hocky')));
     }
     // gọi các list học kỳ
     const fetchHocKy = async () => {
@@ -31,7 +31,7 @@ const Home = () => {
             const response = await fetch('https://localhost:7111/api/HocKy');
             const HocKyData = await response.json();
             setHocKy(HocKyData);
-            sessionStorage.setItem('hocky', JSON.stringify(hocKy));
+            sessionStorage.setItem('hocky', JSON.stringify(HocKyData));
         } catch (error) {
             alert(error);
             console.error('Error fetching data:', error);

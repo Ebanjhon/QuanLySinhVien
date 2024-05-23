@@ -13,6 +13,9 @@ const Profile = () => {
     const [address, setAddress] = useState(user.userInfo.Address);
     const [role, setRole] = useState(user.userInfo.Role);
     const [readOnly, setReadOnly] = useState(false);
+    const [showpass, setShowPass] = useState(false);
+    const [password, setPassword] = useState('');
+
 
     // chinh sửa thông tin
     const toggleReadOnly = () => {
@@ -25,12 +28,12 @@ const Profile = () => {
     };
 
     const setuser = () => {
-        setFirstName(user.currentUser.firstName);
-        setLasttName(user.currentUser.lastName);
-        setEmail(user.currentUser.email);
-        setUserName(user.currentUser.username);
-        setAvatar(user.currentUser.avatar);
-        setAddress(user.currentUser.address);
+        setFirstName(user.userInfo.FirstName);
+        setLasttName(user.userInfo.LastName);
+        setEmail(user.userInfo.Email);
+        setUserName(user.userInfo.Username);
+        setAvatar(user.userInfo.Avatar);
+        setAddress(user.userInfo.Address);
     };
 
     const update = () => {
@@ -68,6 +71,79 @@ const Profile = () => {
         }
     };
 
+    const changePass = () => {
+        if (showpass)
+            setShowPass(false);
+        else
+            setShowPass(true);
+    }
+    // cap nhật pass
+    const fetchUserpass = async () => {
+        try {
+            const response = await fetch(`https://localhost:7111/api/User/changPassword?idUser=${user.userInfo.IdUser}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(password)
+            });
+
+            if (response.ok) {
+                alert("cập nhật thành công!");
+                setShowPass(false);
+                update();
+            } else {
+                console.error('Cập nhật mật khẩu không thành công');
+                return null;
+            }
+        } catch (error) {
+            console.error('Lỗi:', error);
+            return null;
+        }
+    };
+    // cập nhật user
+    const updateUser = async () => {
+
+        try {
+            const response = await fetch(`https://localhost:7111/api/User/${user.userInfo.IdUser}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    IdUser: user.userInfo.IdUser,
+                    Username: "",
+                    Password: "",
+                    FirstName: firstname,
+                    LastName: lastname,
+                    Avatar: "",
+                    Email: email,
+                    Address: address,
+                    Role: ""
+                })
+            });
+
+            if (response.ok) {
+                setReadOnly(false);
+                alert("cập nhật thành công!");
+                const userInfo = await response.json();
+                dispatch({ "type": "login", "payload": { userInfo } });
+                setuser();
+            } else {
+                console.error('Cập nhật thông tin không thành công');
+                alert('Cập nhật thông tin không thành công');
+                return null;
+            }
+        } catch (error) {
+            console.error('Lỗi:', error);
+            return null;
+        }
+    };
+
+
+
     return (
         <div className="container-cont">
             <Drawer />
@@ -79,42 +155,58 @@ const Profile = () => {
                             <br />
                             <button className='btn btn-info' onClick={toggleReadOnly}>Edit your profile</button>
                             <br></br>
-                            <button className='btn btn-dark'>Đổi mật khẩu</button>
+                            <button className='btn btn-dark' onClick={changePass}>Đổi mật khẩu</button>
                         </div>
                         <div className='info_form'>
                             <h1>{username}</h1>
                             <p>"{role}"</p>
-                            <form>
-                                <div style={{ display: "flex" }}>
-                                    <div class="mb-3">
-                                        <label for="exampleFormControlInput1" class="form-label">First name</label>
-                                        <input type="text" class="form-control" value={firstname} onChange={ChangeFN} />
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="exampleFormControlInput1" class="form-label" >Last name</label>
-                                        <input type="text" class="form-control" value={lastname} onChange={ChangeLN} />
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="exampleFormControlInput1" class="form-label">Email</label>
-                                    <input type="email" class="form-control" value={email} onChange={ChangeE} />
-                                </div>
+                            {!showpass ? (
+                                <>
+                                    <form>
+                                        <div style={{ display: "flex" }}>
+                                            <div class="mb-3">
+                                                <label for="exampleFormControlInput1" class="form-label">First name</label>
+                                                <input type="text" class="form-control" value={firstname} onChange={ChangeFN} />
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="exampleFormControlInput1" class="form-label" >Last name</label>
+                                                <input type="text" class="form-control" value={lastname} onChange={ChangeLN} />
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="exampleFormControlInput1" class="form-label">Email</label>
+                                            <input type="email" class="form-control" value={email} onChange={ChangeE} />
+                                        </div>
 
-                                <div class="mb-3">
-                                    <label for="exampleFormControlInput1" class="form-label">Address</label>
-                                    <input type="text" class="form-control" value={address} onChange={ChangeA} />
-                                </div>
-                            </form>
-                            { }
-                            <div className={readOnly ? "edit" : "unedit"}>
-                                <button className='btn btn-danger' onClick={cancel} style={{ width: "200px" }}>Hủy</button>
-                                <button className='btn btn-xanh' onClick={update} style={{ width: "200px" }}>cập nhật</button>
-                            </div>
+                                        <div class="mb-3">
+                                            <label for="exampleFormControlInput1" class="form-label">Address</label>
+                                            <input type="text" class="form-control" value={address} onChange={ChangeA} />
+                                        </div>
+                                    </form>
+                                    <div className={readOnly ? "edit" : "unedit"}>
+                                        <button className='btn btn-danger' onClick={cancel} style={{ width: "200px" }}>Hủy</button>
+                                        <button className='btn btn-xanh' onClick={updateUser} style={{ width: "200px" }}>cập nhật</button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className='box-change-pass'>
+                                        <div class="mb-3">
+                                            <label for="exampleInputPassword1" class="form-label">Password</label>
+                                            <input type="password" class="form-control" value={password} onChange={(p) => setPassword(p.target.value)} />
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <button class="btn btn-secondary" style={{ width: "180px" }} onClick={fetchUserpass}>Cập nhật mật khẩu</button>
+                                            <button class="btn btn-danger" style={{ width: "180px" }} onClick={changePass}>Hủy</button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
 
     )
 };
